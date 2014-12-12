@@ -296,10 +296,6 @@ func CreateRecordHandler(w http.ResponseWriter, r *http.Request) {
 func GetTokenHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	username := vars["username"]
-	if ok, _ := CheckUserToken(username, GetTokenFromHeader(r)); !ok {
-		http.Error(w, "Authorization Failed", http.StatusUnauthorized)
-		return
-	}
 
 	k := buildKey(KeyPrefixUser, username)
 	b, err := db.Get(k, nil)

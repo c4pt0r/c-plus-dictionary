@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/antonholmquist/jason"
+	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"github.com/nu7hatch/gouuid"
 	"github.com/syndtr/goleveldb/leveldb"
@@ -258,12 +259,21 @@ func AuthFilter(w http.ResponseWriter, r *http.Request) bool {
 		if err != nil {
 			break
 		}
+
+		if b {
+			u, err := GetUserFromName(pair[0])
+			if err != nil {
+				break
+			}
+			context.Set(r, "user", u)
+		}
 		return b
 	case "Token":
 		u, err := GetUserFromToken(payload)
 		if err != nil || u == nil {
 			break
 		}
+		context.Set(r, "user", u)
 		return true
 	}
 	http.Error(w, "Authorization Failed", http.StatusUnauthorized)
@@ -273,6 +283,11 @@ func AuthFilter(w http.ResponseWriter, r *http.Request) bool {
 func CreateRecordHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	username := vars["username"]
+	if v := context.Get(r, "user"); v != nil {
+		if v.(*User).Username != username {
+			http.Error(w, "Authorization Failed", http.StatusUnauthorized)
+		}
+	}
 
 	dec := json.NewDecoder(r.Body)
 	var rec Record
@@ -296,6 +311,11 @@ func CreateRecordHandler(w http.ResponseWriter, r *http.Request) {
 func GetTokenHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	username := vars["username"]
+	if v := context.Get(r, "user"); v != nil {
+		if v.(*User).Username != username {
+			http.Error(w, "Authorization Failed", http.StatusUnauthorized)
+		}
+	}
 
 	k := buildKey(KeyPrefixUser, username)
 	b, err := db.Get(k, nil)
@@ -316,9 +336,10 @@ func GetTokenHandler(w http.ResponseWriter, r *http.Request) {
 func GetRecordsHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	username := vars["username"]
-	if ok, _ := CheckUserToken(username, GetTokenFromHeader(r)); !ok {
-		http.Error(w, "Authorization Failed", http.StatusUnauthorized)
-		return
+	if v := context.Get(r, "user"); v != nil {
+		if v.(*User).Username != username {
+			http.Error(w, "Authorization Failed", http.StatusUnauthorized)
+		}
 	}
 
 	recs, err := GetRecords(username)
@@ -334,9 +355,10 @@ func GetRecordsByDateHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	username := vars["username"]
 	dateStr := vars["dateStr"]
-	if ok, _ := CheckUserToken(username, GetTokenFromHeader(r)); !ok {
-		http.Error(w, "Authorization Failed", http.StatusUnauthorized)
-		return
+	if v := context.Get(r, "user"); v != nil {
+		if v.(*User).Username != username {
+			http.Error(w, "Authorization Failed", http.StatusUnauthorized)
+		}
 	}
 
 	recs, err := GetRecordsByDate(username, dateStr)

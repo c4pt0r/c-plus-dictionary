@@ -286,6 +286,7 @@ func CreateRecordHandler(w http.ResponseWriter, r *http.Request) {
 	if v := context.Get(r, "user"); v != nil {
 		if v.(*User).Username != username {
 			http.Error(w, "Authorization Failed", http.StatusUnauthorized)
+			return
 		}
 	}
 
@@ -314,6 +315,7 @@ func GetTokenHandler(w http.ResponseWriter, r *http.Request) {
 	if v := context.Get(r, "user"); v != nil {
 		if v.(*User).Username != username {
 			http.Error(w, "Authorization Failed", http.StatusUnauthorized)
+			return
 		}
 	}
 
@@ -339,6 +341,7 @@ func GetRecordsHandler(w http.ResponseWriter, r *http.Request) {
 	if v := context.Get(r, "user"); v != nil {
 		if v.(*User).Username != username {
 			http.Error(w, "Authorization Failed", http.StatusUnauthorized)
+			return
 		}
 	}
 
@@ -358,6 +361,7 @@ func GetRecordsByDateHandler(w http.ResponseWriter, r *http.Request) {
 	if v := context.Get(r, "user"); v != nil {
 		if v.(*User).Username != username {
 			http.Error(w, "Authorization Failed", http.StatusUnauthorized)
+			return
 		}
 	}
 

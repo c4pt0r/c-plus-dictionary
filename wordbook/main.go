@@ -1,7 +1,9 @@
 package main
 
 import (
+	"crypto/md5"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -11,6 +13,7 @@ import (
 
 	"github.com/antonholmquist/jason"
 	"github.com/gorilla/mux"
+	"github.com/nu7hatch/gouuid"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/util"
 )
@@ -43,6 +46,11 @@ var db *leveldb.DB
 func buildKey(args ...string) []byte {
 	return []byte(strings.Join(args, KeySeperator))
 }
+func md5Hash(text string) string {
+	hasher := md5.New()
+	hasher.Write([]byte(text))
+	return hex.EncodeToString(hasher.Sum(nil))
+}
 
 var ErrUserExists = errors.New("username already exists")
 
@@ -69,7 +77,7 @@ func GetUserFromName(username string) (*User, error) {
 }
 
 func CheckUserToken(username string, token string) (bool, error) {
-	u, err := GetUserFromToken(token)
+	u, err := GetUserFromName(username)
 	if err != nil {
 		return false, err
 	}
@@ -87,11 +95,9 @@ func CheckUser(username string, pwd string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-
-	if u.Username == username && u.Pwd == pwd {
+	if u.Username == username && u.Pwd == md5Hash(pwd) {
 		return true, nil
 	}
-
 	return false, nil
 }
 
@@ -114,10 +120,12 @@ func Register(username string, pwd string) (*User, error) {
 	}
 	k := buildKey(KeyPrefixUser, username)
 
+	u4, _ := uuid.NewV4()
+
 	u := &User{
 		Username: username,
-		Pwd:      pwd,
-		Token:    username, // FIXME: later
+		Pwd:      md5Hash(pwd),
+		Token:    md5Hash(u4.String()),
 	}
 
 	b, _ := json.Marshal(u)

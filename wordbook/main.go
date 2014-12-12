@@ -366,5 +366,5 @@ func main() {
 	r.Handle("/{username}", NewRouteFilter().AddFilter(AuthFilter).Handler(GetRecordsHandler)).Methods("GET")
 	r.Handle("/{username}/{dateStr}", NewRouteFilter().AddFilter(AuthFilter).Handler(GetRecordsByDateHandler)).Methods("GET")
 
-	http.ListenAndServe(*addr, r)
+	http.ListenAndServeTLS(*addr, "./public_key", "./private_key", r)
 }

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <style>
+    body {
+      font-size: 16px;
+    }
+    .container {
+      padding-top: 10px;
+      padding-left: 30px;
+    }
+  </style>
+  </head>
+  <body>
+    <div class="container">
+      <h3> Options </h3>
+      </hr>
+      <div>
+        <p><input type="checkbox" id="dblclick-trigger" value="1" /> Show Popup when I double click a word</p>
+        <p><input type="checkbox" id="select-trigger" value="1" /> Show Popup when I select a word</p>
+        <p>Trigger Key:</p>
+        <select id="trigger-key">
+          <option value="none">None</option>
+          <option value="metaKey">Cmd (Mac only)</option>
+          <option value="altKey">Alt</option>
+          <option value="ctrlKey">Ctrl</option>
+        </select>
+      </div>
+    </div>
+  </body>
+  <script type="text/javascript" src="jquery.min.js"></script>
+  <script type="text/javascript" src="options.js"></script>
+</html>

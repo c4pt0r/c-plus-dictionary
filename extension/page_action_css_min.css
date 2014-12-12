@@ -1,0 +1,82 @@
+﻿body {
+    color: black;
+    font-family: 'Microsoft Yahei','Segoe UI',sans-serif;
+    font-size: 14px;
+    margin: 0;
+    padding: 10px 15px;
+    width: 350px;
+    cursor: default;
+}
+
+a {
+    color: #58d;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+p {
+    margin: 0px 0px 3px 0px;
+}
+
+input {
+    font-family: 'Microsoft YaHei','Segoe UI',sans-serif;
+}
+
+input[type=button] {
+    background-color: #58d;
+    color: rgba(255,255,255,0.9); font-weight: normal;
+    padding: 2px 0px; margin: 2px auto;
+    line-height: 20px;
+    border: solid 2px #58d;
+    cursor: pointer;
+    transition: linear 0.2s;
+    transition-property: background-color, color, border-color;
+    outline: none;
+}
+
+input[type=button]:disabled {
+    background-color: #eee;
+    border-color: #eee;
+    color: #aaa;
+    cursor: default;
+}
+
+input[type=button]:enabled:hover {
+    background-color: #47b;
+    color: #fff;
+}
+
+#query-field {
+    position: absolute;
+    left: 0px;
+    width: 240px; height: 18px;
+    line-height: 18px;
+    padding: 4px; margin: 2px auto;
+    border: solid 1px #eee;
+    outline: none;
+    transition: border-color linear 0.2s;
+    font-size: 14px; color: #333;
+}
+
+#query-field:focus {
+    border-color: #ccc;
+}
+
+#button {
+    position: absolute;
+    right: 0px;
+    width: 80px;
+}
+
+#extra-padding {
+    padding: 6px;
+}
+
+#lookup-form {
+    position: relative;
+    height: 32px;
+}
+

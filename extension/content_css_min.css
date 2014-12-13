@@ -18,13 +18,13 @@
   height: auto;
   white-space: nowrap;
   top: -32px;
-  background: rgba(0,0,0,.8);
+  background: rgba(0,0,0,.8) !important;
   -moz-border-radius:3px;
   -webkit-border-radius:3px;
   border-radius:3px;
-  color: #fff;
+  color: #fff !important;
   font-size: 13px!important;
-  font-family: 'Microsoft YaHei','Segoe UI',sans-serif;
+  font-family: 'Microsoft YaHei','Segoe UI',sans-serif !important;
 
   max-width:350px;
 }
@@ -33,6 +33,7 @@
   word-wrap: break-word;
   word-break: normal;
   white-space: pre-line;
+  color: #fff !important;
 }
 
 #hdict-bubble-container .word {
@@ -44,6 +45,6 @@
 #hdict-bubble-container .phonetic {
   font-weight: normal;
   margin-bottom: 5px;
-  color: #ccc;
+  color: #ccc !important;
   font-size: 13px!important;
 }

@@ -20,10 +20,11 @@ import (
 )
 
 const (
-	KeySeperator    = "_"
-	KeyPrefixUser   = "user"
-	KeyPrefixRecord = "record"
-	KeyPrefixToken  = "token"
+	KeySeperator       = "_"
+	KeyPrefixUser      = "user"
+	KeyPrefixRecord    = "record"
+	KeyPrefixToken     = "token"
+	KeyPrefixWhiteList = "whitelist"
 )
 
 type User struct {
@@ -42,6 +43,8 @@ type Record struct {
 
 var dbPath = flag.String("db", "./.wordbook.db", "db path")
 var addr = flag.String("addr", ":8088", "addr")
+
+// global db
 var db *leveldb.DB
 
 func buildKey(args ...string) []byte {
@@ -111,6 +114,24 @@ func GetUserFromToken(token string) (*User, error) {
 	return GetUserFromName(string(uname))
 }
 
+func AddWhiteList(username, word string) error {
+	k := buildKey(KeyPrefixWhiteList, username, word)
+	err := db.Put(k, []byte(word), nil)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func IsInWhiteList(username, word string) (bool, error) {
+	k := buildKey(KeyPrefixWhiteList, username, word)
+	b, err := db.Has(k, nil)
+	if err != nil {
+		return false, err
+	}
+	return b, nil
+}
+
 func Register(username string, pwd string) (*User, error) {
 	exists, err := UserExists(username)
 	if err != nil {
@@ -145,11 +166,18 @@ func Register(username string, pwd string) (*User, error) {
 }
 
 func CreateRecord(username string, rec *Record) error {
+	ok, err := IsInWhiteList(username, rec.Word)
+	if err != nil {
+		return err
+	}
+	if ok {
+		return errors.New("already in whitelist")
+	}
 	rec.CreateAt = time.Now()
 	date := rec.CreateAt.Format("20060102")
 	k := buildKey(KeyPrefixRecord, username, date, rec.Word)
 	b, _ := json.Marshal(rec)
-	err := db.Put(k, b, nil)
+	err = db.Put(k, b, nil)
 	if err != nil {
 		return err
 	}
@@ -374,6 +402,35 @@ func GetRecordsByDateHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(b)
 }
 
+func AddWhiteListHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	username := vars["username"]
+	if v := context.Get(r, "user"); v != nil {
+		if v.(*User).Username != username {
+			http.Error(w, "Authorization Failed", http.StatusUnauthorized)
+			return
+		}
+	}
+
+	form, err := jason.NewObjectFromReader(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	word, err := form.GetString("word")
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	err = AddWhiteList(username, word)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+}
+
 func main() {
 	flag.Parse()
 
@@ -388,6 +445,7 @@ func main() {
 
 	r.HandleFunc("/register", RegisterHandler).Methods("POST")
 	r.Handle("/{username}/token", NewRouteFilter().AddFilter(AuthFilter).Handler(GetTokenHandler)).Methods("GET")
+	r.Handle("/{username}/white", NewRouteFilter().AddFilter(AuthFilter).Handler(AddWhiteListHandler)).Methods("POST")
 	r.Handle("/{username}", NewRouteFilter().AddFilter(AuthFilter).Handler(CreateRecordHandler)).Methods("POST")
 	r.Handle("/{username}", NewRouteFilter().AddFilter(AuthFilter).Handler(GetRecordsHandler)).Methods("GET")
 	r.Handle("/{username}/{dateStr}", NewRouteFilter().AddFilter(AuthFilter).Handler(GetRecordsByDateHandler)).Methods("GET")

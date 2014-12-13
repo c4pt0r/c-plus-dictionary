@@ -14,7 +14,7 @@
       "js": ["jquery.min.js", "content_js.js" ],
       "matches": [ "<all_urls>" ]
    } ],
-   "content_security_policy": "script-src 'self' https://fanyi.youdao.com ; object-src 'self'",
+   "content_security_policy": "script-src 'self' https://fanyi.youdao.com https://huangdx.net; object-src 'self'",
    "description": "View definitions in both your language and English as you browse the web. Based on Google Dictionary by Google.",
    "icons": {
       "128": "static/icon128.png",
@@ -33,6 +33,6 @@
    "manifest_version": 2,
    "name": "C+ Dictionary",
    "options_page": "options.html",
-   "permissions": [ "tabs", "storage", "https://fanyi.youdao.com/*" ],
+   "permissions": [ "tabs", "storage", "https://fanyi.youdao.com/*" , "https://huangdx.net/*"],
    "version": "0.1.1"
 }

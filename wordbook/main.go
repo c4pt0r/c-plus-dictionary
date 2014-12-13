@@ -214,6 +214,11 @@ func GetRecords(username string) ([]*Record, error) {
 	return iterRecords(k)
 }
 
+func RemoveRecord(username, dateStr, word string) error {
+	k := buildKey(KeyPrefixRecord, username, dateStr)
+	return db.Delete(k, nil)
+}
+
 /* handlers */
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
@@ -431,6 +436,36 @@ func AddWhiteListHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func RemoveRecordHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	username := vars["username"]
+	dateStr := vars["dateStr"]
+	if v := context.Get(r, "user"); v != nil {
+		if v.(*User).Username != username {
+			http.Error(w, "Authorization Failed", http.StatusUnauthorized)
+			return
+		}
+	}
+
+	form, err := jason.NewObjectFromReader(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	word, err := form.GetString("word")
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	err = RemoveRecord(username, dateStr, word)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+}
+
 func main() {
 	flag.Parse()
 
@@ -449,6 +484,7 @@ func main() {
 	r.Handle("/{username}", NewRouteFilter().AddFilter(AuthFilter).Handler(CreateRecordHandler)).Methods("POST")
 	r.Handle("/{username}", NewRouteFilter().AddFilter(AuthFilter).Handler(GetRecordsHandler)).Methods("GET")
 	r.Handle("/{username}/{dateStr}", NewRouteFilter().AddFilter(AuthFilter).Handler(GetRecordsByDateHandler)).Methods("GET")
+	r.Handle("/{username}/{dateStr}/rm", NewRouteFilter().AddFilter(AuthFilter).Handler(RemoveRecordHandler)).Methods("POST")
 
 	http.ListenAndServeTLS(*addr, "./public_key", "./private_key", r)
 }

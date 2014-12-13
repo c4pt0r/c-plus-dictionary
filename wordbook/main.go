@@ -215,7 +215,7 @@ func GetRecords(username string) ([]*Record, error) {
 }
 
 func RemoveRecord(username, dateStr, word string) error {
-	k := buildKey(KeyPrefixRecord, username, dateStr)
+	k := buildKey(KeyPrefixRecord, username, dateStr, word)
 	return db.Delete(k, nil)
 }
 
